@@ -1,0 +1,22 @@
+from setuptools import setup, find_packages
+import os
+
+def get_bin_files():
+    """Collect all files under the 'bin' folder."""
+    bin_files = []
+    for root, _, files in os.walk("bin"):
+        for file in files:
+            bin_files.append(os.path.join(root, file))
+    return bin_files
+
+setup(
+    name="your_package_name",
+    version="0.1",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    include_package_data=True,  # Respect MANIFEST.in
+    data_files=[
+        ("bin", get_bin_files())  # Include bin files explicitly
+    ],
+    zip_safe=False,
+)
