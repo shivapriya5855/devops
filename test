@@ -1,20 +1,33 @@
 from setuptools import setup, find_packages
+import os
 
-def collect_bin_files():
-    """Collect all files under the bin directory."""
-    import os
-    bin_files = []
-    for root, _, files in os.walk("bin"):
+# Helper function to collect files from a directory
+def collect_files(directory, extensions=None):
+    collected_files = []
+    for root, _, files in os.walk(directory):
         for file in files:
-            bin_files.append(os.path.relpath(os.path.join(root, file)))
-    return bin_files
+            if not extensions or any(file.endswith(ext) for ext in extensions):
+                collected_files.append(os.path.relpath(os.path.join(root, file)))
+    return collected_files
+
+# Collect all non-Python files from 'bin' and 'src'
+bin_files = collect_files("bin")  # All files in the 'bin' directory
+static_files = collect_files("src")  # All files in the 'src' directory
 
 setup(
     name="your_package_name",
-    version="0.1",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    include_package_data=True,
-    package_data={"": collect_bin_files()},
-    zip_safe=False,
+    version="1.0.0",
+    description="A package with bin and src files included",
+    packages=find_packages(where="src"),  # Discover Python packages in 'src'
+    package_dir={"": "src"},  # Map root namespace to 'src'
+    include_package_data=True,  # Include files from MANIFEST.in
+    package_data={
+        # Include all files from 'src' (relative to the src directory)
+        "": static_files,
+    },
+    data_files=[
+        # Place bin files under the site-packages/bin directory
+        ("bin", bin_files),
+    ],
+    zip_safe=False,  # Ensures the package is installed unzipped
 )
