@@ -26,10 +26,10 @@ class CustomInstallCommand(install):
 
 # Setup configuration
 setup(
-    name='sk_demo',
+    name='test_demo',
     version=os.getenv("BUILD_VERSION", "4.1"),
-    author="shivapriya kattekola",
-    author_email="shivapriya.kattekola@bofa.com",
+    author="pinky",
+    author_email="pinky123@gmail.com",
     url='https://scm.horizon.bankofamerica.com/projects/GBAMDEVOPS/repos/sk_demo/browse',
     packages=find_packages(where='src'),  # include all packages under src
     package_dir={'': 'src'},  # tell distutils packages are under src
