@@ -1,45 +1,45 @@
 import os
 import shutil
-from setuptools import setup, find_packages
-from setuptools.command.install import install
+from setuptools import setup
+from setuptools.command.build_py import build_py
 
-# Custom Install Command
-class CustomInstallCommand(install):
+class CustomBuildCommand(build_py):
+    """Custom build process to move venv/bin to lib/site-packages during build."""
     def run(self):
-        # Run the standard installation process
-        install.run(self)
-        
+        # Run the standard build process
+        build_py.run(self)
+
         # Paths
         source_dir = os.path.join(os.getcwd(), 'venv', 'bin')
-        target_dir = os.path.join(self.install_lib, 'site-packages', 'bin')  # Adjust target if needed
+        target_dir = os.path.join(os.getcwd(), 'build', 'lib', 'bin')  # Target inside build/lib
+        
+        print(f"Source Directory: {source_dir}")  # Debugging log
+        print(f"Target Directory: {target_dir}")  # Debugging log
         
         # Ensure source exists
         if os.path.exists(source_dir):
-            print(f"Moving {source_dir} to {target_dir}...")
+            print(f"Moving files from {source_dir} to {target_dir}...")
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)  # Create target directory if it doesn't exist
-            # Move files
+            # Move files from source to target
             for file_name in os.listdir(source_dir):
                 full_file_name = os.path.join(source_dir, file_name)
                 if os.path.isfile(full_file_name):
                     shutil.move(full_file_name, os.path.join(target_dir, file_name))
+        else:
+            print(f"Source directory {source_dir} does not exist.")
 
 # Setup configuration
 setup(
     name='test_demo',
     version=os.getenv("BUILD_VERSION", "4.1"),
-    author="pinky",
-    author_email="pinky123@gmail.com",
-    url='https://scm.horizon.bankofamerica.com/projects/test/repos/test_demo/browse',
-    packages=find_packages(where='src'),  # include all packages under src
-    package_dir={'': 'src'},  # tell distutils packages are under src
-    package_data={
-        '': ['*.env', 'bin'],  # Include .env files and bin folder
-    },
+    author="",
+    author_email="",
+    url='https://scm.',
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
     include_package_data=True,
-    data_files=[('bin', [os.path.join('bin', f) for f in os.listdir('bin')])],
-    zip_safe=True,
     cmdclass={
-        'install': CustomInstallCommand,  # Use the custom install command
+        'build_py': CustomBuildCommand,  # Use custom build_py command
     },
 )
