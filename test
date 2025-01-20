@@ -1,45 +1,53 @@
 import os
 import shutil
-from setuptools import setup
-from setuptools.command.build_py import build_py
+from setuptools import setup, find_packages
+from setuptools.command.install import install
 
-class CustomBuildCommand(build_py):
-    """Custom build process to move venv/bin to lib/site-packages during build."""
+class CustomInstallCommand(install):
+    """
+    Custom installation process to copy `bin` folder files into `lib/pythonX/site-packages`.
+    """
     def run(self):
-        # Run the standard build process
-        build_py.run(self)
+        # Run the standard install process
+        install.run(self)
 
-        # Paths
-        source_dir = os.path.join(os.getcwd(), 'venv', 'bin')
-        target_dir = os.path.join(os.getcwd(), 'build', 'lib', 'bin')  # Target inside build/lib
-        
-        print(f"Source Directory: {source_dir}")  # Debugging log
-        print(f"Target Directory: {target_dir}")  # Debugging log
-        
-        # Ensure source exists
-        if os.path.exists(source_dir):
-            print(f"Moving files from {source_dir} to {target_dir}...")
-            if not os.path.exists(target_dir):
-                os.makedirs(target_dir)  # Create target directory if it doesn't exist
-            # Move files from source to target
-            for file_name in os.listdir(source_dir):
-                full_file_name = os.path.join(source_dir, file_name)
-                if os.path.isfile(full_file_name):
-                    shutil.move(full_file_name, os.path.join(target_dir, file_name))
-        else:
-            print(f"Source directory {source_dir} does not exist.")
+        # Define the source and destination paths
+        src_bin_dir = os.path.join(os.getcwd(), 'bin')  # Source bin directory
+        lib_dir = os.path.join(self.install_lib, 'bin')  # Destination bin directory inside lib
 
-# Setup configuration
+        # Ensure the destination directory exists
+        if not os.path.exists(lib_dir):
+            os.makedirs(lib_dir)
+
+        # Copy files from bin to lib/bin
+        if os.path.exists(src_bin_dir):
+            for file_name in os.listdir(src_bin_dir):
+                src_file = os.path.join(src_bin_dir, file_name)
+                dst_file = os.path.join(lib_dir, file_name)
+
+                if os.path.isfile(src_file):
+                    shutil.copy2(src_file, dst_file)
+                    print(f"Copied {src_file} to {dst_file}")
+                else:
+                    print(f"Skipped non-file: {src_file}")
+
+# Package metadata
+NAME = 'demo'
+VERSION = os.getenv('BUILD_VERSION', '4.1')
+AUTHOR = ''
+AUTHOR_EMAIL = ''
+
 setup(
-    name='test_demo',
-    version=os.getenv("BUILD_VERSION", "4.1"),
-    author="",
-    author_email="",
-    url='https://scm.',
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
-    include_package_data=True,
+    name=NAME,
+    version=VERSION,
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    url='',
+    packages=find_packages('src'),  # Include all packages under 'src'
+    package_dir={'': 'src'},  # Tell distutils that packages are under 'src'
+    include_package_data=True,  # Include data files specified in MANIFEST.in
+    zip_safe=False,
     cmdclass={
-        'build_py': CustomBuildCommand,  # Use custom build_py command
+        'install': CustomInstallCommand,  # Override the install command
     },
 )
