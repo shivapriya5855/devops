@@ -1,33 +1,45 @@
-from setuptools import setup, find_packages
 import os
+import shutil
+from setuptools import setup, find_packages
+from setuptools.command.install import install
 
-# Helper function to collect files from a directory
-def collect_files(directory, extensions=None):
-    collected_files = []
-    for root, _, files in os.walk(directory):
-        for file in files:
-            if not extensions or any(file.endswith(ext) for ext in extensions):
-                collected_files.append(os.path.relpath(os.path.join(root, file)))
-    return collected_files
+# Custom Install Command
+class CustomInstallCommand(install):
+    def run(self):
+        # Run the standard installation process
+        install.run(self)
+        
+        # Paths
+        source_dir = os.path.join(os.getcwd(), 'venv', 'bin')
+        target_dir = os.path.join(self.install_lib, 'site-packages', 'bin')  # Adjust target if needed
+        
+        # Ensure source exists
+        if os.path.exists(source_dir):
+            print(f"Moving {source_dir} to {target_dir}...")
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)  # Create target directory if it doesn't exist
+            # Move files
+            for file_name in os.listdir(source_dir):
+                full_file_name = os.path.join(source_dir, file_name)
+                if os.path.isfile(full_file_name):
+                    shutil.move(full_file_name, os.path.join(target_dir, file_name))
 
-# Collect all non-Python files from 'bin' and 'src'
-bin_files = collect_files("bin")  # All files in the 'bin' directory
-static_files = collect_files("src")  # All files in the 'src' directory
-
+# Setup configuration
 setup(
-    name="your_package_name",
-    version="1.0.0",
-    description="A package with bin and src files included",
-    packages=find_packages(where="src"),  # Discover Python packages in 'src'
-    package_dir={"": "src"},  # Map root namespace to 'src'
-    include_package_data=True,  # Include files from MANIFEST.in
+    name='sk_demo',
+    version=os.getenv("BUILD_VERSION", "4.1"),
+    author="shivapriya kattekola",
+    author_email="shivapriya.kattekola@bofa.com",
+    url='https://scm.horizon.bankofamerica.com/projects/GBAMDEVOPS/repos/sk_demo/browse',
+    packages=find_packages(where='src'),  # include all packages under src
+    package_dir={'': 'src'},  # tell distutils packages are under src
     package_data={
-        # Include all files from 'src' (relative to the src directory)
-        "": static_files,
+        '': ['*.env', 'bin'],  # Include .env files and bin folder
     },
-    data_files=[
-        # Place bin files under the site-packages/bin directory
-        ("bin", bin_files),
-    ],
-    zip_safe=False,  # Ensures the package is installed unzipped
+    include_package_data=True,
+    data_files=[('bin', [os.path.join('bin', f) for f in os.listdir('bin')])],
+    zip_safe=True,
+    cmdclass={
+        'install': CustomInstallCommand,  # Use the custom install command
+    },
 )
