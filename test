@@ -1,53 +1,20 @@
-import os
-import shutil
 from setuptools import setup, find_packages
-from setuptools.command.install import install
 
-class CustomInstallCommand(install):
+def read_requirements(file_name):
     """
-    Custom installation process to copy `bin` folder files into `lib/pythonX/site-packages`.
+    Reads the requirements file and returns a list of dependencies.
     """
-    def run(self):
-        # Run the standard install process
-        install.run(self)
-
-        # Define the source and destination paths
-        src_bin_dir = os.path.join(os.getcwd(), 'bin')  # Source bin directory
-        lib_dir = os.path.join(self.install_lib, 'bin')  # Destination bin directory inside lib
-
-        # Ensure the destination directory exists
-        if not os.path.exists(lib_dir):
-            os.makedirs(lib_dir)
-
-        # Copy files from bin to lib/bin
-        if os.path.exists(src_bin_dir):
-            for file_name in os.listdir(src_bin_dir):
-                src_file = os.path.join(src_bin_dir, file_name)
-                dst_file = os.path.join(lib_dir, file_name)
-
-                if os.path.isfile(src_file):
-                    shutil.copy2(src_file, dst_file)
-                    print(f"Copied {src_file} to {dst_file}")
-                else:
-                    print(f"Skipped non-file: {src_file}")
-
-# Package metadata
-NAME = 'demo'
-VERSION = os.getenv('BUILD_VERSION', '4.1')
-AUTHOR = ''
-AUTHOR_EMAIL = ''
+    with open(file_name) as requirements_file:
+        return [line.strip() for line in requirements_file if line.strip() and not line.startswith("#")]
 
 setup(
-    name=NAME,
-    version=VERSION,
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
-    url='',
-    packages=find_packages('src'),  # Include all packages under 'src'
-    package_dir={'': 'src'},  # Tell distutils that packages are under 'src'
-    include_package_data=True,  # Include data files specified in MANIFEST.in
+    name='your_package_name',
+    version='1.0.0',
+    packages=find_packages(),
+    install_requires=read_requirements('requirements.txt'),  # Automatically includes requirements
+    include_package_data=True,
     zip_safe=False,
     cmdclass={
-        'install': CustomInstallCommand,  # Override the install command
+        'install': CustomInstallCommand,  # Your custom install logic
     },
 )
