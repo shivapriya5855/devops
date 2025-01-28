@@ -1,1 +1,5 @@
-Prabh would like to know which entitlement the maps team needs to request in order to promote the release. Additionally, Prabh and Amir, both software engineers, have requested CI access and are looking to obtain at least read access for the CD repository. Could you please advise on the appropriate process for raising this request?
+import sys
+sys.path.append("/path/to/your/repo")
+
+# Now you can import modules from the repo
+import your_module
