@@ -1,5 +1,10 @@
-import sys
-sys.path.append("/path/to/your/repo")
-
-# Now you can import modules from the repo
-import your_module
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-artifact-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
