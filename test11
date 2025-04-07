@@ -1,0 +1,12 @@
+env:
+  - name: ARTIFACT_URL
+    value: "https://artifactory.company.com/path/to/artifact.zip"
+
+volumeMounts:
+  - name: artifact-volume
+    mountPath: /mnt/artifact
+
+volumes:
+  - name: artifact-volume
+    persistentVolumeClaim:
+      claimName: your-pvc
