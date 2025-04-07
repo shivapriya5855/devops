@@ -1,10 +1,19 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: my-artifact-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+#!/bin/sh
+
+set -e
+
+ARTIFACT_ZIP="/mnt/artifact/artifact.zip"
+
+echo "[INFO] Checking for existing artifact..."
+
+if [ ! -f "$ARTIFACT_ZIP" ]; then
+  echo "[INFO] Artifact not found. Downloading from $ARTIFACT_URL ..."
+  curl -sSL -o "$ARTIFACT_ZIP" "$ARTIFACT_URL"
+  echo "[INFO] Extracting artifact..."
+  unzip -o "$ARTIFACT_ZIP" -d /mnt/artifact
+else
+  echo "[INFO] Artifact already exists. Skipping download."
+fi
+
+echo "[INFO] Executing app: $@"
+exec "$@"
