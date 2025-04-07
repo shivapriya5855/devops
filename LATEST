@@ -1,39 +1,20 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: artifact-loader
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: artifact-loader
-  template:
-    metadata:
-      labels:
-        app: artifact-loader
-    spec:
-      containers:
-      - name: artifact-loader
-        image: alpine:3.18
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            apk add --no-cache curl unzip && \
-            if [ ! -f /mnt/artifact/artifact.zip ]; then
-              echo "File not found. Downloading..." && \
-              curl -sSL -o /mnt/artifact/artifact.zip "$ARTIFACT_URL" && \
-              unzip -o /mnt/artifact/artifact.zip -d /mnt/artifact;
-            else
-              echo "File already exists. Skipping download.";
-            fi && \
-            tail -f /dev/null
-        env:
-        - name: ARTIFACT_URL
-          value: "https://artifactory.example.com/path/to/your.zip"
-        volumeMounts:
-        - name: artifact-volume
-          mountPath: /mnt/artifact
-      volumes:
-      - name: artifact-volume
-        persistentVolumeClaim:
-          claimName: my-artifact-pvc
+FROM alpine:3.18
+
+# Install curl and unzip
+RUN apk add --no-cache curl unzip bash
+
+# Create working directories
+RUN mkdir -p /mnt/artifact /app
+
+# Copy app and scripts
+COPY start-app.sh /app/start-app.sh
+COPY entrypoint.sh /entrypoint.sh
+
+# Set permissions
+RUN chmod +x /entrypoint.sh /app/start-app.sh
+
+# Set working dir
+WORKDIR /app
+
+# Set entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
