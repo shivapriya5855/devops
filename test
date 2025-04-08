@@ -1,19 +1,10 @@
-#!/bin/sh
+FROM python:3.11-slim
 
-set -e
+# Install Kubernetes client
+RUN pip install kubernetes
 
-ARTIFACT_ZIP="/mnt/artifact/artifact.zip"
+# Copy the script
+COPY create_pvc.py /app/create_pvc.py
+WORKDIR /app
 
-echo "[INFO] Checking for existing artifact..."
-
-if [ ! -f "$ARTIFACT_ZIP" ]; then
-  echo "[INFO] Artifact not found. Downloading from $ARTIFACT_URL ..."
-  curl -sSL -o "$ARTIFACT_ZIP" "$ARTIFACT_URL"
-  echo "[INFO] Extracting artifact..."
-  unzip -o "$ARTIFACT_ZIP" -d /mnt/artifact
-else
-  echo "[INFO] Artifact already exists. Skipping download."
-fi
-
-echo "[INFO] Executing app: $@"
-exec "$@"
+CMD ["python", "create_pvc.py"]
