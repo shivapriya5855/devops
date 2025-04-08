@@ -1,12 +1,14 @@
-env:
-  - name: ARTIFACT_URL
-    value: "https://artifactory.company.com/path/to/artifact.zip"
+from kubernetes import client, config
+config.load_kube_config()  # Use load_incluster_config() if running inside a cluster
 
-volumeMounts:
-  - name: artifact-volume
-    mountPath: /mnt/artifact
-
-volumes:
-  - name: artifact-volume
-    persistentVolumeClaim:
-      claimName: your-pvc
+client.CoreV1Api().create_namespaced_persistent_volume_claim(
+  namespace="default",
+  body=client.V1PersistentVolumeClaim(
+    metadata=client.V1ObjectMeta(name="my-pvc"),
+    spec=client.V1PersistentVolumeClaimSpec(
+      access_modes=["ReadWriteOnce"],
+      resources=client.V1ResourceRequirements(requests={"storage": "5Gi"}),
+      storage_class_name="managed-csi"
+    )
+  )
+)
